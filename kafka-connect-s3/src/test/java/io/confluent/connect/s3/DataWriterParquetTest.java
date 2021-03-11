@@ -29,6 +29,7 @@ import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
@@ -98,7 +99,9 @@ public class DataWriterParquetTest extends TestWithMockedS3 {
     format = new ParquetFormat(storage);
 
     s3.createBucket(S3_TEST_BUCKET_NAME);
-    assertTrue(s3.doesBucketExist(S3_TEST_BUCKET_NAME));
+    @SuppressWarnings("deprecation")
+    boolean bucketExists = s3.doesBucketExist(S3_TEST_BUCKET_NAME);
+    assertTrue(bucketExists);
   }
 
   @After
@@ -677,7 +680,7 @@ public class DataWriterParquetTest extends TestWithMockedS3 {
 
     Collections.sort(actualFiles);
     Collections.sort(expectedFiles);
-    assertThat(actualFiles, is(expectedFiles));
+    MatcherAssert.assertThat(actualFiles, is(expectedFiles));
   }
 
   protected void verifyContents(List<SinkRecord> expectedRecords, int startIndex, Collection<Object> records) {

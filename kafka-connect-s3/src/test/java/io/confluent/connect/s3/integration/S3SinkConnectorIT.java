@@ -538,7 +538,7 @@ public class S3SinkConnectorIT extends BaseConnectorIT {
   private static List<JsonNode> getContentsFromAvro(String filePath) {
     try {
       DatumReader<GenericRecord> datumReader = new GenericDatumReader<>();
-      DataFileReader<GenericRecord> dataFileReader = new DataFileReader(new File(filePath),
+      DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(filePath),
           datumReader);
       List<JsonNode> fileRows = new ArrayList<>();
       while (dataFileReader.hasNext()) {
@@ -562,6 +562,7 @@ public class S3SinkConnectorIT extends BaseConnectorIT {
     try {
       ParquetReader<SimpleRecord> reader = ParquetReader
           .builder(new SimpleReadSupport(), new Path(filePath)).build();
+      @SuppressWarnings("deprecation")
       ParquetMetadata metadata = ParquetFileReader
           .readFooter(new Configuration(), new Path(filePath));
       JsonRecordFormatter.JsonGroupFormatter formatter = JsonRecordFormatter
