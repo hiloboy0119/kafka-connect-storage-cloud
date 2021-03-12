@@ -102,6 +102,11 @@ public class DeltaRecordWriter implements RecordWriter {
 
   @Override
   public void commit() {
-    spark.createDataFrame(sparkRecords, sparkSchema).write().format("delta").save(destination);
+    spark.createDataFrame(sparkRecords, sparkSchema)
+        .write()
+        .format("delta")
+        .mode("append")
+        .option("mergeSchema", "true")
+        .save(destination);
   }
 }

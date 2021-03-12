@@ -16,6 +16,7 @@
 
 package io.confluent.connect.s3;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -124,22 +125,24 @@ public class DataWriterDeltaTest extends TestWithMockedS3 {
   }
 
   @Test
-  public void testDeltaRead() {
-    long deltaCount = spark.read().format("delta").load(deltaDir.toAbsolutePath().toString()).count();
-    Assert.assertEquals(1000, deltaCount);
-  }
-
-  @Test
   public void writeTest() throws Exception {
+    long deltaCountBefore = spark.read().format("delta").load(deltaDir.toAbsolutePath().toString()).count();
+    assertEquals(1000, deltaCountBefore);
+
     S3SinkTask task = new S3SinkTask(connectorConfig, context, storage, partitioner, format, SYSTEM_TIME);
 
     DataWriterParquetTest recordMaker = new DataWriterParquetTest();
 
-    List<SinkRecord> sinkRecords = recordMaker.createRecords(7);
+    List<SinkRecord> sinkRecords = recordMaker.createRecords(7, 0, context.assignment());
+    assertEquals(14, sinkRecords.size());
     // Perform write
     task.put(sinkRecords);
     task.close(context.assignment());
     task.stop();
+
+    long deltaCountAfter = spark.read().format("delta").load(deltaDir.toAbsolutePath().toString()).count();
+    //two commits of 3 records each for 2 partitions
+    Assert.assertEquals(1012, deltaCountAfter);
   }
 
 }
